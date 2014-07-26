@@ -17,6 +17,8 @@ import priority.Priority;
 /**
  * GibbsRun - this class implements the gibbs sampler
  * @author raluca
+ * Modified by: Eng. Paula Reyes, Ph.D. - M.Sc. Eng. Carlos Sierra 
+ * Univerisdad Antonio Narino - Colombia   
  */
 public class GibbsRun extends Thread
 {
@@ -200,24 +202,29 @@ public class GibbsRun extends Thread
 	public void run()
 	{
 		/* for each TF: */
-		for (int tf=0; tf<tf_names.length; tf++)
+		for (int tf=0; tf < tf_names.length; tf++)
 		{
 			/**********/ if (this.stop_thread) break;
 			
 			/* read the sequences... */
-			try { 
+			try 
+			{ 
 				String[] temp = GibbsStatic.get_DNAsequences(tf_names[tf]);
 				comboseq = new String[temp.length/2];
 				comboseq_names = new String[temp.length/2];
-				for (int h=0; h<temp.length; h+=2) {
+			
+				for (int h=0; h<temp.length; h+=2) 
+				{
 					comboseq_names[h/2] = temp[h];
 					comboseq[h/2] = temp[h+1];
 				}
 			}
-			catch (GibbsException err) {
+			catch (GibbsException err) 
+			{
 				if (Priority.useInterface)
 					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
 							"Gibbs error", JOptionPane.ERROR_MESSAGE);
+			
 				System.out.println(err.getMessage());
 				continue;
 			}
@@ -230,10 +237,12 @@ public class GibbsRun extends Thread
 					comboseq[i] = comboseq[i] + GibbsStatic.get_reverse(comboseq[i]);
 			
 			/* set the priors for each position in each of the sequences */
-			try {
+			try 
+			{
 				set_priors(tf); /* modifies comboprior */
 			}
-			catch (GibbsException err) {
+			catch (GibbsException err) 
+			{
 				if (Priority.useInterface)
 					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
 							"Gibbs error", JOptionPane.ERROR_MESSAGE);
@@ -242,11 +251,11 @@ public class GibbsRun extends Thread
 			}
 
 			
-			
 			/* set the pseudocounts for gamma (the prior on the class) */
 			cprior = new double[nc];
 			for (int c=0; c<nc; c++) 
 				cprior[c] = Parameters.pseudocounts_class;
+			
 			if (Parameters.putative_class >= 0) /* the slight advantage when the class is known */
 				cprior[Parameters.putative_class] = Parameters.pseudocounts_putative_class; 
 			
@@ -256,26 +265,32 @@ public class GibbsRun extends Thread
 			/* compute the normalization constant */
 			denom = new double[nc][comboseq.length];
 			int c,i,j;
+			
 			for (i=0; i<comboseq.length; i++)
 			{
-				for (c=0; c<nc; c++) {
+				for (c=0; c<nc; c++) 
+				{
 					denom[c][i] = 1;
 				
-					if (comboprior[c][i].length != comboseq[i].length()) {
+					if (comboprior[c][i].length != comboseq[i].length()) 
+					{
 						String mess = "The size of a fasta sequence (" + 
 						              comboseq[i].length() + 
 						              ") does not match the size of the prior (" +
 						              comboprior[c][i].length + ").";
+					
 						if (Priority.useInterface)
 							javax.swing.JOptionPane.showMessageDialog(null, mess, 
 									"Gibbs error", JOptionPane.ERROR_MESSAGE);
+						
 						System.out.println(mess+"\n");
 						continue;
 					}
 				}
 				
 				for (j=0; j<comboseq[i].length(); j++)
-					for (c=0; c<nc; c++) { 
+					for (c=0; c<nc; c++) 
+					{ 
 						denom[c][i] = denom[c][i] + comboprior[c][i][j]/(1-comboprior[c][i][j]);
 					}
 			}
@@ -287,11 +302,17 @@ public class GibbsRun extends Thread
 			pans = fname_output + ".trials.txt";
 			pbest = fname_output + ".best.txt";
 			plogl = fname_output + ".logl";
-			try { initial_print(tf); }
-			catch (GibbsException err) {
+			
+			try 
+			{ 
+				initial_print(tf); 
+			}
+			catch (GibbsException err) 
+			{
 				if (Priority.useInterface)
 					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
 							"Gibbs error", JOptionPane.ERROR_MESSAGE);
+			
 				System.out.println(err.getMessage());
 				continue;
 			}
@@ -313,17 +334,20 @@ public class GibbsRun extends Thread
 			int tr;
 			System.out.print("Running TF " + tf_names[tf] + " ");
 			
-			////////////////////// Modified ///////////////////////////////////////////
-			Vector<Trial> trials_thread = new Vector<Trial>();
+			/*  Modified code by Paula Reyes and Carlos Sierra  */
+			
+			Vector<Trial> trials_thread = new Vector<Trial>(); //Collection of trials
+			
+			//Create and start all trials
 			for(int runs = 0; runs < Parameters.trials; runs++)
 			{
 				tr = runs;
-				trials_thread.add(new Trial(comboseq, comboprior, nc, Parameters.trials, cprior, phi_prior, back, Parameters.iter, Parameters.sampling_exp, Parameters.noocflag, Parameters.outputStep, Parameters.bkgrOrder, tr, Z, denom, wsize, tf));
-				trials_thread.get(trials_thread.size() - 1).start();
+				trials_thread.add(new Trial(comboseq, comboprior, nc, Parameters.trials, cprior, phi_prior, back, Parameters.iter, Parameters.sampling_exp, Parameters.noocflag, Parameters.outputStep, Parameters.bkgrOrder, tr, Z, denom, wsize, tf)); //Add trial to collection
+				trials_thread.get(trials_thread.size() - 1).start(); //Start Trial
 				
 				try 
 				{
-					Thread.sleep(2000);
+					Thread.sleep(2000); //Delay of two seconds
 				} 
 				catch (InterruptedException e) 
 				{
@@ -336,15 +360,17 @@ public class GibbsRun extends Thread
 			{
 				try 
 				{
-					trials_thread.get(l).join();
-					printCurrentTrialInfo(trials_thread.get(l).tr, trials_thread.get(l).bestlogl, trials_thread.get(l).logl, trials_thread.get(l).bestZ, trials_thread.get(l).bestC, -1, -1); //TODO
-					printToScreen(tf, trials_thread.get(l).tr, Parameters.iter - 1, trials_thread.get(l).bestZ, trials_thread.get(l).bestC, trials_thread.get(l).bestlogl, -1, -1); //TODO
+					trials_thread.get(l).join(); //Wait to each trial (thread) finish
+					printCurrentTrialInfo(trials_thread.get(l).tr, trials_thread.get(l).bestlogl, trials_thread.get(l).logl, trials_thread.get(l).bestZ, trials_thread.get(l).bestC, -1, -1); //Print trial information 
+					printToScreen(tf, trials_thread.get(l).tr, Parameters.iter - 1, trials_thread.get(l).bestZ, trials_thread.get(l).bestC, trials_thread.get(l).bestlogl, -1, -1); //Print in screen 
 					
+					//Get best result of all trials
 					if (overallbestlogl < trials_thread.get(l).bestlogl) 
 					{
 						overallbestlogl = trials_thread.get(l).bestlogl;
 						overallbestlogl_trial = trials_thread.get(l).tr; 
 						overallbestlogl_iter = trials_thread.get(l).bestlogl_iter; 
+						
 						for (int m = 0; m < trials_thread.get(l).bestZ.length; m++) 
 							overallbestZ[m] = trials_thread.get(l).bestZ[m];
 						
@@ -360,8 +386,9 @@ public class GibbsRun extends Thread
 			
 			tr = trials_thread.size();
 			
-			System.out.print("\n\n\n");
-			if (tr > 0) {
+			System.out.print("\n\n");
+			if (tr > 0) 
+			{
 				printToScreen(tf, -1, -1, overallbestZ, overallbestC, overallbestlogl, 
 						overallbestlogl_trial, overallbestlogl_iter);
 				printCurrentTrialInfo(-1, overallbestlogl, null, overallbestZ, overallbestC,
@@ -369,12 +396,15 @@ public class GibbsRun extends Thread
 				double[][] overallbest_phi = GibbsStatic.calPhi(overallbestZ, comboseq, -1, wsize, GibbsStatic.noprior);
 				Parameters.setOutput(overallbestZ, overallbestC, overallbest_phi, comboseq, comboseq_names, tf_names[tf]);
 			}
-			////////////////////////////////// End Modified //////////////////////////////////////////
+			/* End modified code segment */
 		}/* end for (int tf=0; tf<fname.length; tf++) */
-		if (Priority.useInterface) {
+		
+		if (Priority.useInterface) 
+		{
 			this.mainApp.win.activateStart();
 		}
-		else {
+		else 
+		{
 			System.out.println("Done. The results are available in " + Parameters.path_output);
 		}
 	   
