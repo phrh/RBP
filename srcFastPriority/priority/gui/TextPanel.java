@@ -28,12 +28,15 @@ class TextPanel extends JPanel
 
 	
 	/** Constructor */
-	public TextPanel() {
+	public TextPanel() 
+	{
 		super();
 	}
 	
+	
 	/** Creates and initilizes the components. */
-	public void init() {
+	public void init() 
+	{
 		this.setLayout( new BorderLayout());
 		this.setBackground(Color.WHITE);
 		this.setForeground(Color.WHITE);
@@ -42,27 +45,35 @@ class TextPanel extends JPanel
 		{
 			private static final long serialVersionUID = 1;
 			/* to disable the line wrapping in the JTextPane component */
+	
 			public void setSize(Dimension d)
 			{
 				if (d.width < getParent().getSize().width)
+				{
 					d.width = getParent().getSize().width;
+				}
+				
 				super.setSize(d);
 			}
+			
 			public boolean getScrollableTracksViewportWidth()
 			{
 				return false;
 			}
 		};
+		
 		textPane.setEditable(false);
 		textPane.setFont(new Font("MonoSpaced", Font.PLAIN, 14));
 		textPane.setMargin(new Insets(5,5,5,5));
 		textPane.setBackground(Color.WHITE);
 		textPane.setEditable(false);
+		
 		doc = (StyledDocument)textPane.getDocument(); /* get the text pane's document */
 		textStyle = doc.addStyle("TextStyle", null);  /* create a style object */
 		
 		scrollPane = new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 		                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
 		this.add(scrollPane, BorderLayout.CENTER);
 		(textPane.getParent()).setBackground(Color.WHITE);
 		
@@ -73,23 +84,33 @@ class TextPanel extends JPanel
 		color2 = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 	}
 	
+	
 	/** Returns the text in the text area. */
-	public String getText() {
+	public String getText() 
+	{
 		return textPane.getText();
 	}
+	
 	
 	/** Appends a string to the text in the text area. */
 	synchronized public void appendText(String str) 
 	{
-		try {
+		try 
+		{
 	        if (str.startsWith("-----")) /* should change in next release */
+	        {
 	        	odd = !odd;	    
+	        }
 	        
 	        /* set the style color attribute */
 	        if (odd)
+	        {
 	        	StyleConstants.setForeground(textStyle, color1);
+	        }
 	        else
+	        {
 	        	StyleConstants.setForeground(textStyle, color2);
+	        }
 	        
 	        /* append the text to the document */
 	        doc.insertString(doc.getLength(), str, textStyle);
@@ -100,12 +121,17 @@ class TextPanel extends JPanel
 	    textPane.setCaretPosition(textPane.getDocument().getLength()); 
 	}
 
+	
 	/** Appends a string to the text in the text area, using the specified color. */
 	synchronized public void appendText(String str, Color color) 
 	{
 		if (color == null)
+		{
 			color = defaultColor;
-		try {
+		}
+		
+		try 
+		{
 			Color prev = StyleConstants.getForeground(textStyle);
         	StyleConstants.setForeground(textStyle, color);
 	        
@@ -114,14 +140,16 @@ class TextPanel extends JPanel
 	        
 	        StyleConstants.setForeground(textStyle, prev);
 	    } 
-		catch (BadLocationException e) {
-	    }
+		catch (BadLocationException e)	{ }
+		
 		/* make the last line visible */
 	    textPane.setCaretPosition(textPane.getDocument().getLength()); 
 	}
 	
+	
 	/** Resets the text area. */
-	synchronized public void resetText() {
+	synchronized public void resetText() 
+	{
 		textPane.setText("");	
 	}
 }

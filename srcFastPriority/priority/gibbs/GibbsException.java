@@ -5,10 +5,13 @@ package priority.gibbs;
  * gibbs sampler will be of type GibbsException.
  * @author raluca
  */
-public class GibbsException extends Exception {
+public class GibbsException extends Exception 
+{
 	private static final long serialVersionUID = 1;
 	public GibbsException() {}
-	public GibbsException(String msg) {
+	
+	public GibbsException(String msg) 
+	{
 		super(msg);
 	}
 }

@@ -11,31 +11,44 @@ import java.util.*;
  * @author raluca
  */
 public class Strings {
+	
 	static public HashMap<String,String> strings = new HashMap<String,String>();
 	static public String file_name = "./config/strings";
 	
+	
 	/** Reads the strings from the configuration file and returns 
 	 * an error message or the empty string. */
-	static public String setStrings() {
+	static public String setStrings() 
+	{
 		String[] result;
 		String line;
 		BufferedReader br = null;
 		int line_no = 0;
 
-		try {
+		try 
+		{
 			br = new BufferedReader(new FileReader(file_name));
 			line = br.readLine();
 			line_no++;
 			
-			while (line != null) {
-				if (line.compareTo("") != 0) {
+			while (line != null) 
+			{
+				if (line.compareTo("") != 0) 
+				{
 				     result = line.split("=");
-				     if (result.length != 2) 
+				     
+				     if (result.length != 2)
+				     { 
 				    	return "Error: the configuration file " + file_name + " is not well formatted!\n" +
 				    		 "(line " + line_no + ": \"" + line + "\")";
+				     }	
+				     
 				     if (result[0].indexOf(' ') >= 0)
-					    	return "Error: the configuration file " + file_name + " is not well formatted!\n" +
-				    		 "(line " + line_no + ": \"" + line + "\")";				    	 
+				     {
+				    	 return "Error: the configuration file " + file_name + " is not well formatted!\n" +
+				    		 "(line " + line_no + ": \"" + line + "\")";
+				     }	 
+				     
 				     strings.put(result[0].trim(), result[1].trim());
 				}
 				line = br.readLine();
@@ -43,19 +56,31 @@ public class Strings {
 			
 			br.close();
 		}
-		catch (IOException e) {
-			try { br.close(); } 
+		catch (IOException e) 
+		{
+			try
+			{ 
+				br.close(); 
+			} 
 			catch (Exception ee) { }
+			
 			return e.getMessage();
 		}	
 		return "";
 	}
 	
+	
 	/** Returns the string for the object objectName
 	 * or "" if no such object exists. */
-	public static String getString(String objectName) {
+	public static String getString(String objectName) 
+	{
 		if (strings.containsKey(objectName))
+		{
 			return (String)strings.get(objectName);
-		else return "";
+		}
+		else 
+		{
+			return "";
+		}
 	}
 }

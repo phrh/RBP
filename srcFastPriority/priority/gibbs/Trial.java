@@ -69,6 +69,7 @@ public class Trial extends Thread {
 		logl = new double[iter];
 	}
 	
+	
 	/**
 	 *  This method runs all steps for Trial, including iterations, sampling, and selection of best solution found.
 	 */
@@ -83,6 +84,7 @@ public class Trial extends Thread {
 		int[] C = new int[comboseq.length]; 
 			
 		Random rand = new Random();
+		
 		/* initialize C and Z (uniform probability) */
 		for (int i=0; i<comboseq.length; i++)
 		{
@@ -98,14 +100,18 @@ public class Trial extends Thread {
 				temp[j] = comboprior[ C[i] ][i][j];
 				
 				if (temp[j] > 0)
+				{
 					temp[j] = 1;
+				}
 				
 				tempsum += temp[j];
 			}
 			
 			Z[i] = GibbsStatic.rand_sample(temp, tempsum);
 			if (Z[i] == -1) /* debugging only */
+			{
 				System.out.println("ATTN: rand_sample returned -1!!!");
+			}
 		}
 				
 		int index = rand.nextInt(comboseq.length); /* choose random index */
@@ -116,6 +122,7 @@ public class Trial extends Thread {
 		boolean flag_for_oldsampling = false;
 		
 		int n_sampling = this.sampling_exp.length;
+		
 		for (int i_sampling=1; i_sampling <= n_sampling; i_sampling++) 
 		{
 			if (tr < i_sampling * trials / n_sampling) 
@@ -124,14 +131,18 @@ public class Trial extends Thread {
 				power = (int)sampling_exp[i_sampling-1][1];
 			
 				if ((int)sampling_exp[i_sampling-1][2] == 0)
+				{
 					flag_for_oldsampling = true;
+				}
 				
 				break;
 			}
 		}				
 		
 		if (powerpssm != 1 || power != 1) 
+		{
 			noocflag = false;
+		}
 			
 		for (int cnt=0; cnt<iter; cnt++)
 		{
@@ -141,9 +152,13 @@ public class Trial extends Thread {
 				powerpssm=Math.max(1,powerpssm-1);
 		
 				if(power > 1 || powerpssm >1)
+				{
 					noocflag = false;
+				}
 				else
+				{
 					noocflag = true;
+				}
 			}
 			
 			/* pick the next sequence (+1 or randomly: index = rand.nextInt(comboseq.length))*/
@@ -164,15 +179,21 @@ public class Trial extends Thread {
 			for (int j=0; (j<length); j++)  // && (stop_thread==false); j++) 
 			{	
 				if (comboprior[C[index]][index][j] == 0) 
-						W[j] = 0;
-				else { 
+				{
+					W[j] = 0;
+				}
+				else 
+				{ 
 					double quantity1 = GibbsStatic.calA(phi, wsize, 
 							comboseq[index].substring(j,j+wsize), back, bkgrOrder);
-					if(flag_for_oldsampling) {
+					
+					if(flag_for_oldsampling) 
+					{
 						quantity1=quantity1*Math.pow(GibbsStatic.calonlypssm(phi, wsize, 
 							comboseq[index].substring(j,j+wsize), back, bkgrOrder),powerpssm-1);
 					}
-					else {
+					else 
+					{
 						quantity1=Math.pow(quantity1,powerpssm);
 					}
 					
@@ -203,7 +224,9 @@ public class Trial extends Thread {
 				Z[index] = GibbsStatic.rand_sample(W, sumW);
 				
 				if(Z[index]==-1)
+				{
 					System.out.println("ATTN "+index+" "+Z[index]+" "+length);
+				}
 				
 				/* next we compute the weights for sampling C[index] */										
 				if (Z[index] == length) /* the sampler picked the appended 1 ("no motif") */ 
@@ -231,7 +254,9 @@ public class Trial extends Thread {
 				sumWc = 0;
 				
 				for (int c=0; c<nc; c++)
+				{
 					sumWc += Wc[c];
+				}
 				
 			} /* end if (GibbsStatic.max(W) == 0) - the debug case */
 			

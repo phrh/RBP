@@ -27,6 +27,7 @@ import priority.Strings;
 * @author raluca
 */
 public class PositionsView extends JFrame implements ActionListener {
+	
 	static final long serialVersionUID = 1;
 
 	private JScrollPane scrollPane;
@@ -43,13 +44,17 @@ public class PositionsView extends JFrame implements ActionListener {
 	private String seq[];
 	private String seq_name[];
 	
+	
 	/** Constructor */
-	public PositionsView(String title){
+	public PositionsView(String title)
+	{
 		super(title);
 	}
 	
+	
 	/** Creates and initilizes the components. */
-	public void init(int bestZ[], String seq[], String seq_name[]) {
+	public void init(int bestZ[], String seq[], String seq_name[]) 
+	{
 		this.seq = seq;
 		this.seq_name = seq_name;
 		this.bestZ = bestZ;
@@ -85,11 +90,13 @@ public class PositionsView extends JFrame implements ActionListener {
 				return false;
 			}
 		};
+		
 		textPane.setEditable(false);
 		textPane.setFont(new Font("MonoSpaced", Font.PLAIN, 14));
 		textPane.setMargin(new Insets(10,7,10,7));
 		textPane.setBackground(Color.WHITE);
 		textPane.setEditable(false);
+		
 		doc = (StyledDocument)textPane.getDocument(); /* get the text pane's document */
 		textStyle = doc.addStyle("TextStyle", null);  /* create a style object */
 				
@@ -125,7 +132,8 @@ public class PositionsView extends JFrame implements ActionListener {
 	/** Appends a string to the text in the text area. */
 	public void appendText(String str) 
 	{
-  		try {        
+  		try 
+  		{        
 	        /* append the text to the document */
 	        doc.insertString(doc.getLength(), str, textStyle);
 	    } 
@@ -138,26 +146,35 @@ public class PositionsView extends JFrame implements ActionListener {
 	{
 		Color color;
 		int position;
-		for (int i=0; i<seq.length; i++) {
+		for (int i=0; i<seq.length; i++) 
+		{
 			StyleConstants.setForeground(textStyle, Color.BLACK);
 			appendText(seq_name[i] + " - ");
 			
 			position = bestZ[i];
-			if (bestZ[i] < 0) {
+		
+			if (bestZ[i] < 0) 
+			{
 				appendText("no occurrence of the motif\n");
 				appendText(seq[i] + "\n\n");
 				continue;
 			}
-			else if (bestZ[i] < seq[i].length()) {/* direct strand */
+			else 
+			{	
+				if (bestZ[i] < seq[i].length()) 
+				{/* direct strand */
 				/* +1 because the index in a string starts from 0, but in the sequence it starts from 1 */
 				appendText("the motif starts at position " + (bestZ[i]+1) + ", direct strand\n");
 				color = color1;
+				}
+				else 
+				{ /* complementary strand */
+					appendText("the motif starts at position " + (bestZ[i]-seq[i].length()+1) + ", complementary strand\n");
+					position = 2*seq[i].length() - bestZ[i] - Parameters.wsize;
+					color = color2;
+				}
 			}
-			else { /* complementary strand */
-				appendText("the motif starts at position " + (bestZ[i]-seq[i].length()+1) + ", complementary strand\n");
-				position = 2*seq[i].length() - bestZ[i] - Parameters.wsize;
-				color = color2;
-			}
+				
 			appendText(seq[i].substring(0,position));
 			StyleConstants.setBackground(textStyle, bkgrcolor1);
 			StyleConstants.setForeground(textStyle, color);
@@ -168,14 +185,17 @@ public class PositionsView extends JFrame implements ActionListener {
 			StyleConstants.setForeground(textStyle, Color.BLACK);
 			appendText( seq[i].substring(position + Parameters.wsize, seq[i].length()) + "\n\n");
 		}	
+		
 		/* make the first line visible */
 	    textPane.setCaretPosition(0); 
-
 	}
 
+	
 	/* To be modified in the next PRIORITY version */
-	public void actionPerformed(ActionEvent ev) {
-		if (ev.getSource() == wrapButton) {
+	public void actionPerformed(ActionEvent ev) 
+	{
+		if (ev.getSource() == wrapButton) 
+		{
 			textPane = new JTextPane();
 			textPane.setEditable(false);
 			textPane.setFont(new Font("MonoSpaced", Font.PLAIN, 14));
@@ -193,7 +213,8 @@ public class PositionsView extends JFrame implements ActionListener {
 			viewPositions(bestZ, seq, seq_name );
 			this.validate();
 		}
-		else { //nowrapButton
+		else 
+		{ //nowrapButton
 			textPane = new JTextPane()
 			{
 				private static final long serialVersionUID = 1;
@@ -201,7 +222,10 @@ public class PositionsView extends JFrame implements ActionListener {
 				public void setSize(Dimension d)
 				{
 					if (d.width < getParent().getSize().width)
+					{
 						d.width = getParent().getSize().width;
+					}
+			
 					super.setSize(d);
 				}
 				public boolean getScrollableTracksViewportWidth()
@@ -209,16 +233,19 @@ public class PositionsView extends JFrame implements ActionListener {
 					return false;
 				}
 			};
+		
 			textPane.setEditable(false);
 			textPane.setFont(new Font("MonoSpaced", Font.PLAIN, 14));
 			textPane.setMargin(new Insets(10,7,10,7));
 			textPane.setBackground(Color.WHITE);
 			textPane.setEditable(false);
+			
 			doc = (StyledDocument)textPane.getDocument(); /* get the text pane's document */
 			textStyle = doc.addStyle("TextStyle", null);  /* create a style object */
 			getContentPane().remove(scrollPane);
 			scrollPane = new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 			                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
 			getContentPane().add(scrollPane, BorderLayout.CENTER);
 			(textPane.getParent()).setBackground(Color.WHITE);
 			viewPositions(bestZ, seq, seq_name );

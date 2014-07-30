@@ -86,11 +86,13 @@ class ParamPanel extends JPanel implements ActionListener
 				BorderFactory.createEmptyBorder(0,5,0,5)));
 		tfName.setText(Parameters.tf_name);
 		
-		if (Parameters.individualTF == false) {
+		if (Parameters.individualTF == false) 
+		{
 			fileTF.setSelected(true);
 			tfName.setEnabled(false);
 		} 
-		else {
+		else 
+		{
 			individualTF.setSelected(true);
 			tfFilePanel.setEnabled(false);
 		}
@@ -159,9 +161,13 @@ class ParamPanel extends JPanel implements ActionListener
 				);
 		
 		if (Parameters.multiple_priors == false)
+		{
 			center.add(singlePriorFilePanel, BorderLayout.CENTER);
+		}
 		else 
+		{
 			center.add(priorFilesPanel, BorderLayout.CENTER);
+		}
 		
 		
 		/* the center->south panel (numberPanel) */
@@ -199,7 +205,8 @@ class ParamPanel extends JPanel implements ActionListener
 	
 	/** Creates spinner, sets spinner properties and adds it to the panel. */
 	private static JSpinner createAndAddSpinner(JPanel panelLabel, JPanel panel, 
-			String label, int value, int min, int max) {
+			String label, int value, int min, int max) 
+	{
 		SpinnerNumberModel model = new SpinnerNumberModel(value, min, max, 1);
 		
 		JSpinner spinner = new JSpinner(model);
@@ -218,13 +225,17 @@ class ParamPanel extends JPanel implements ActionListener
 
 	
 	/** Implements the actionPerformed function (from ActionListener) */
-	public void actionPerformed(ActionEvent ev) {
-		if (ev.getSource() == fileTF) {
+	public void actionPerformed(ActionEvent ev) 
+	{
+		if (ev.getSource() == fileTF) 
+		{
 			tfName.setEnabled(false);
 			tfFilePanel.setEnabled(true);
  			return;
  		}
-		if (ev.getSource() == individualTF) {
+		
+		if (ev.getSource() == individualTF) 
+		{
 			tfName.setEnabled(true);
 			tfFilePanel.setEnabled(false);
  			return;
@@ -232,13 +243,16 @@ class ParamPanel extends JPanel implements ActionListener
 	}	
 	
 
-	public void switchToSinglePrior() {
+	public void switchToSinglePrior() 
+	{
 		center.remove(priorFilesPanel);
 		center.add(singlePriorFilePanel, BorderLayout.CENTER);   
 		Parameters.multiple_priors = false;
 	}
 	
-	public void switchToMultiplePriors() {
+	
+	public void switchToMultiplePriors() 
+	{
 		center.remove(singlePriorFilePanel);
 		center.add(priorFilesPanel, BorderLayout.CENTER);
 		Parameters.multiple_priors = true;
@@ -248,11 +262,13 @@ class ParamPanel extends JPanel implements ActionListener
 	/** Gets the values for all parameters from the widgets 
 	 *  in this panel, checks them and copies them into the 
 	 *  static members of the class Parameters. */ 
-	public String setParameterValues() {
+	public String setParameterValues() 
+	{
 		
 		/* the number of iterations and number of trials are valid for sure */
 		/* we also set wsize and bkgrOrder (whether or not they are valid will be checked later) */
-		try {
+		try 
+		{
 			Parameters.trials = Integer.parseInt((String)
 					((JSpinner.DefaultEditor)trialsSpinner.getEditor()).getTextField().getText());
 			Parameters.iter = ((Number)((SpinnerModel)iterationsSpinner.getModel()).getValue()).intValue();
@@ -261,7 +277,8 @@ class ParamPanel extends JPanel implements ActionListener
 			Parameters.bkgrOrder = Integer.parseInt((String)
 					((JSpinner.DefaultEditor)bkgrOrderSpinner.getEditor()).getTextField().getText());
 		}
-		catch(Exception e) {
+		catch(Exception e) 
+		{
 			System.out.println(e);/* it shouldn't get here (ever) */
 		}
 
@@ -270,34 +287,64 @@ class ParamPanel extends JPanel implements ActionListener
 		/* the path for the output files: must be a writable directory */
 		String path = outputFilePanel.getText();
 		File dir = new File(path);
-	    if (!dir.exists()) 
-	    	return "Error: the directory for the output files (\"" + path + "\") does not exist!";
+	    
+		if (!dir.exists()) 
+		{
+			return "Error: the directory for the output files (\"" + path + "\") does not exist!";
+		}
+		
 		if (!dir.isDirectory()) 
-	    	return "Error: the path for the output files (\"" + path + "\") is not a valid directory!";
-	    if (!dir.canWrite()) 
-	    	return "Error: the directory for the output files (\"" + path + "\") is not writable!";
+		{
+			return "Error: the path for the output files (\"" + path + "\") is not a valid directory!";
+		}
+	    
+		if (!dir.canWrite()) 
+		{
+			return "Error: the directory for the output files (\"" + path + "\") is not writable!";
+		}
+		
 		Parameters.path_output = path;
 		
 		/* the bkgr model file: must be a readable file + the content will be checked later */
 		path = bkgrFilePanel.getText();
 		File file = new File(path);
-	    if (!file.exists()) 
-	    	return "Error: the background model file (\"" + path + "\") does not exist!";
-	    if (!file.isFile()) 
-	    	return "Error: the background model file (\"" + path + "\") is not a valid file!";
-	    if (!file.canRead()) 
-	    	return "Error: the background model file (\"" + path + "\") is not readable!";
+	    
+		if (!file.exists()) 
+		{
+			return "Error: the background model file (\"" + path + "\") does not exist!";
+		}
+	    
+		if (!file.isFile()) 
+		{
+			return "Error: the background model file (\"" + path + "\") is not a valid file!";
+		}
+	    
+		if (!file.canRead()) 
+		{
+			return "Error: the background model file (\"" + path + "\") is not readable!";
+		}
+		
 		Parameters.back_file = path;
 		
 		/* the path for the FASTA data files: must be a readable directory + check content later */
 		path = dataFilePanel.getText();
 		dir = new File(path);
-	    if (!dir.exists()) 
-	    	return "Error: the directory for the FASTA files (\"" + path + "\") does not exist!";
+	    
+		if (!dir.exists()) 
+		{
+			return "Error: the directory for the FASTA files (\"" + path + "\") does not exist!";
+		}
+		
 		if (!dir.isDirectory()) 
-	    	return "Error: the path for the FASTA files (\"" + path + "\") is not a valid directory!";
-	    if (!dir.canRead()) 
-	    	return "Error: the directory for the FASTA files (\"" + path + "\") is not readable!";
+		{
+			return "Error: the path for the FASTA files (\"" + path + "\") is not a valid directory!";
+		}
+	    
+		if (!dir.canRead()) 
+		{
+			return "Error: the directory for the FASTA files (\"" + path + "\") is not readable!";
+		}
+		
 		Parameters.fname_path = path;
 
 		
@@ -309,53 +356,81 @@ class ParamPanel extends JPanel implements ActionListener
 		 * so we don't need to send them !!!! */
 		String err = Parameters.readBackground();
 		if (err.compareTo("") != 0)
+		{
 			return err;
+		}
+		
 		System.out.println("Background model... OK");
 		
 
 		/* setting the TF names */
-		if (individualTF.isSelected()) { /*we apply the alg for a TF only */
+		if (individualTF.isSelected()) 
+		{ /*we apply the alg for a TF only */
 			Parameters.tf_name = (tfName.getText()).trim();
-			if (Parameters.tf_name.length() < 1) {
+			
+			if (Parameters.tf_name.length() < 1) 
+			{
 				tfName.requestFocus();
 				return "Error: the TF name field is empty!";
 			}
+			
 			Parameters.individualTF = true;
 			Parameters.tf_names = null;
 			Parameters.tf_names = new String[1];
 			Parameters.tf_names[0] = Parameters.tf_name;
 		}
-		else { /* we apply the alg to all the TFs in a file */
+		else 
+		{ /* we apply the alg to all the TFs in a file */
 			/* the TF names file must be a readable file */
 			path = tfFilePanel.getText();
 			file = new File(path);
-		    if (!file.exists()) 
-		    	return "Error: the file with the TF names (\"" + path + "\") does not exist!";
-		    if (!file.isFile()) 
-		    	return "Error: the file with the TF names (\"" + path + "\") is not a valid file!";
+		    
+			if (!file.exists()) 
+			{
+				return "Error: the file with the TF names (\"" + path + "\") does not exist!";
+			}
+		    
+			if (!file.isFile()) 
+			{
+				return "Error: the file with the TF names (\"" + path + "\") is not a valid file!";
+			}
+		    
 		    if (!file.canRead()) 
+		    {
 		    	return "Error: the file with the TF names (\"" + path + "\") is not readable!";
-			Parameters.tf_path = path;
+		    }
+			
+		    Parameters.tf_path = path;
 			Parameters.individualTF = false;
 			err = Parameters.read_TFnames();
+			
 			if (err.compareTo("") != 0)
+			{
 				return err;
+			}
 		}
 		
 		/* next we have to check that for every TF there is a file in the data path
 		 * with the same name as the TF */
-		for (int i=0; i<Parameters.tf_names.length; i++) {
+		for (int i=0; i<Parameters.tf_names.length; i++) 
+		{
 			path = Parameters.fname_path + "/" + Parameters.tf_names[i] + ".fasta";
 			file = new File(path);
-		    if (!file.exists()) 
-		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" +
-		    	Parameters.tf_names[i] + "\" does not exist!";
+		    
+			if (!file.exists()) 
+		    {
+		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" + Parameters.tf_names[i] + "\" does not exist!";
+		    }
+		    
 		    if (!file.isFile()) 
-		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" +
-		    	Parameters.tf_names[i] + "\" is not a valid file!";
+		    {
+		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" + Parameters.tf_names[i] + "\" is not a valid file!";
+		    }
+		    
 		    if (!file.canRead()) 
-		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" +
-		    	Parameters.tf_names[i] + "\" is not a readable file!";
+		    {
+		    	return "Error: the data file \"" + path + "\"\ncorresponding to the TF \"" + Parameters.tf_names[i] + "\" is not a readable file!";
+		    }
 		}
 		
 		
@@ -363,49 +438,73 @@ class ParamPanel extends JPanel implements ActionListener
 		/* SET THE PRIOR INFORMATION */
 		
 		/* first check single/multiple files */
-		if (Parameters.multiple_priors == false) { /* uniform or single prior */
+		if (Parameters.multiple_priors == false) 
+		{ /* uniform or single prior */
 			Parameters.putative_class = -1;
-			if (this.singlePriorFilePanel.uniformPrior.isSelected()) {
+			
+			if (this.singlePriorFilePanel.uniformPrior.isSelected()) 
+			{
 				Parameters.otherclass = true;
 				Parameters.prior_dirs = new String[0];
 			}
-			else {
+			else 
+			{
 				Parameters.otherclass = false;
 				Parameters.prior_dirs = new String[1];
 				Parameters.prior_dirs[0] = this.singlePriorFilePanel.priorFilePanel.getText();
 			}
 		}
-		else { /* multiple priors */
+		else 
+		{ /* multiple priors */
 			/* set the putative class and the "other class"-flag */
 			if (priorFilesPanel.putativeClassCheckbox.isSelected()) 
+			{
 				Parameters.putative_class = ((DefaultListModel)priorFilesPanel.classList.getModel()).
-					indexOf(priorFilesPanel.putativeClassText.getText()); 
+					indexOf(priorFilesPanel.putativeClassText.getText());
+			}	
 			else
+			{
 				Parameters.putative_class = -1;
+			}
+			
 			Parameters.otherclass = priorFilesPanel.otherClassCheckbox.isSelected(); 
 
 	    	/* now the class names will be copied in Parameters.prior_dirs */
 		    int n;
+		    
 		    if (Parameters.otherclass)
+		    {
 		    	n = priorFilesPanel.classListModel.size() - 1;
+		    }
 		    else 
+		    {
 		    	n = priorFilesPanel.classListModel.size();
+		    }
+		    
 		    Parameters.prior_dirs = new String[n];
 		    for (int i=0;i<n;i++)
+		    {
 		    	Parameters.prior_dirs[i] = (String)priorFilesPanel.classListModel.getElementAt(i);		    
+		    }
 	    }
 		
 	    /* Each entry in Parameters.prior_dirs (if such entries exist) must be the name 
 	     * of a readable directory. */	
-		for (int i=0; i<Parameters.prior_dirs.length; i++) {
+		for (int i=0; i<Parameters.prior_dirs.length; i++) 
+		{
 			dir = new File(Parameters.prior_dirs[i]);
+			
 			if ((!dir.exists()) || (!dir.isDirectory()) || (!dir.canRead()))
-		    	return "Error: the prior directory: \"" + Parameters.prior_dirs[i] + 
-		    		"\" does not exist or is not readable!";			
+			{	return "Error: the prior directory: \"" + Parameters.prior_dirs[i] + 
+		    		"\" does not exist or is not readable!";
+			}
 		}
 
 		if (err.compareTo("") != 0)
+		{
 			return err;
+		}
+		
 		System.out.println("Prior files (" + Parameters.prior_dirs.length + ")... OK");
 
 		return "";

@@ -48,23 +48,30 @@ public class MainWindow extends JFrame implements ActionListener
 	
 	
 	/** Constructor */
-	public MainWindow(Priority priority){
+	public MainWindow(Priority priority)
+	{
 		super(Strings.getString("mainWindowTitle"));	
 		mainApp = priority;
 	}
 	
+	
 	/** Appends the text to the text panel. */
-	public void appendTextToTextPanel(String text) {
+	public void appendTextToTextPanel(String text) 
+	{
 		textPanel.appendText(text);
 	}
 	
+	
 	/** Appends the text to the text panel (using the specified color. */
-	public void appendTextToTextPanel(String text, Color color) {
+	public void appendTextToTextPanel(String text, Color color) 
+	{
 		textPanel.appendText(text, color);
 	}
 	
+	
 	/** Creates and initilizes the components. */
-	public void init() {
+	public void init() 
+	{
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				mainApp.stopGibbs();
@@ -73,10 +80,13 @@ public class MainWindow extends JFrame implements ActionListener
 		});	
 		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		//this.setPreferredSize(new Dimension(900, 750));
 		this.setMinimumSize(new Dimension(600, 630));
 		//this.setMaximumSize(new Dimension(900, 900)); /* doesn't work */
+		
 		this.setResizable(true);
+		
 		//this.setSize(new Dimension(900, 640));
 		this.setIconImage(Priority.icon);
 		 
@@ -125,56 +135,81 @@ public class MainWindow extends JFrame implements ActionListener
 		MenuMaker.viewMenuViewPSSM.setEnabled(true);
 		
 		if (Parameters.multiple_priors == true)
+		{
 			MenuMaker.priorsMenuMultiplePriors.setSelected(true);
+		}
 		else
+		{
 			MenuMaker.priorsMenuSinglePrior.setSelected(true);
+		}
 		
 		pack();		 
     } 		
 
+	
 	/** Sets button properties. */
-	private void setButton(JButton button, JPanel panelButtons) {
+	private void setButton(JButton button, JPanel panelButtons) 
+	{
 		String os = "unknown";
-		try { os = System.getProperty("os.name");
-		} catch (SecurityException e) {}
+		try 
+		{ 
+			os = System.getProperty("os.name");
+		} 
+		catch (SecurityException e) {}
+		
 		if(os.indexOf("Mac") >= 0) 
+		{
 			button.setBorder(BorderFactory.createRaisedBevelBorder());
+		}
+		
 		button.addActionListener(this);	
 		panelButtons.add(button);
 	}
 
+	
 	/** Handles the button clicks. */
-	public void actionPerformed(ActionEvent ev) {
+	public void actionPerformed(ActionEvent ev) 
+	{
 		if (ev.getSource() == start) 
 		{
 			String err = paramPanel.setParameterValues();
-			if (err.compareTo("") == 0) {
+			if (err.compareTo("") == 0) 
+			{
 				deactivateStart();
 				Parameters.outputParams_are_set = false;
 				mainApp.startGibbs();
 			}
-			else {		
+			else 
+			{		
 				JOptionPane.showMessageDialog(this, err, "Parameter error", JOptionPane.ERROR_MESSAGE);
 			}
  			return;
  		}
- 		if (ev.getSource() == stop) {
+ 		
+		if (ev.getSource() == stop) 
+		{
  			mainApp.stopGibbs();
  			activateStart();
  			return;
  		}
-		if (ev.getSource() == cleartext) {
+		
+		if (ev.getSource() == cleartext) 
+		{
 			this.textPanel.resetText();
  			return;
  		}
-		if (ev.getSource() == exit) {
+		
+		if (ev.getSource() == exit) 
+		{
 			closeApplication();
  			return;
  		}
 	}
 	
+	
 	/** Activates the start button */
-	public void activateStart() {
+	public void activateStart() 
+	{
 		start.setEnabled(true);
 		MenuMaker.viewMenuViewPositions.setEnabled(true);
 		MenuMaker.viewMenuViewPSSM.setEnabled(true);
@@ -182,8 +217,10 @@ public class MainWindow extends JFrame implements ActionListener
 		MenuMaker.priorsMenuSinglePrior.setEnabled(true);		
 	}
 	
+	
 	/** Deactivates the start button */
-	public void deactivateStart() {
+	public void deactivateStart() 
+	{
 		start.setEnabled(false);
 		MenuMaker.viewMenuViewPositions.setEnabled(false);
 		MenuMaker.viewMenuViewPSSM.setEnabled(false);
@@ -199,21 +236,26 @@ public class MainWindow extends JFrame implements ActionListener
 		System.exit(0);
 	}
 	
+	
 	/** Saves the current parameters into a file using serialization.*/
-	public void saveParametersFile(String fileName) {
+	public void saveParametersFile(String fileName) 
+	{
 		System.out.println("Save all params into file: "+fileName);
 	}
 	
+	
 	/** Loads all the parameters from a file using serialization.*/
-	public void loadParametersFile(String fileName) {
+	public void loadParametersFile(String fileName) 
+	{
 		System.out.println("Load all params from file: " + fileName);
 	}
 	
-	
-	
+		
 	/** Switches to Uniform/SinglePrior view. */
-	public void switchToSinglePrior() {
-		if (Parameters.multiple_priors == true) {
+	public void switchToSinglePrior() 
+	{
+		if (Parameters.multiple_priors == true) 
+		{
 			this.textPanel.resetText();
 			this.paramPanel.switchToSinglePrior();
 			this.pack();
@@ -221,9 +263,12 @@ public class MainWindow extends JFrame implements ActionListener
 		}
 	}
 
+	
 	/** Switches to MultiplePriors view. */
-	public void switchToMultiplePriors() {
-		if (Parameters.multiple_priors == false) {
+	public void switchToMultiplePriors() 
+	{
+		if (Parameters.multiple_priors == false) 
+		{
 			this.textPanel.resetText();
 			this.paramPanel.switchToMultiplePriors();
 			this.pack();
@@ -231,14 +276,18 @@ public class MainWindow extends JFrame implements ActionListener
 		}
 	}
 	
+	
 	/** Shows the final motif. */
-	public void viewFinalPSSM() {
-		if (Parameters.outputParams_are_set == false) {
+	public void viewFinalPSSM() 
+	{
+		if (Parameters.outputParams_are_set == false) 
+		{
 			JOptionPane.showMessageDialog(this, 
 					"Please run the algorithm for at least one trial to compute a motif!", 
 					"Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		
 		MotifView motifFrame = new MotifView("PRIORITY: Best scoring motif (TF: " + Parameters.outputTF_name + ")");
 		motifFrame.init(Parameters.bestPhi);
 		
@@ -248,14 +297,18 @@ public class MainWindow extends JFrame implements ActionListener
 		motifFrame.setVisible(true);	
 	}
 	
+	
 	/** Shows the occurrences of the final motif. */
-	public void viewFinalMotifPositions() {
-		if (Parameters.outputParams_are_set == false) {
+	public void viewFinalMotifPositions() 
+	{
+		if (Parameters.outputParams_are_set == false) 
+		{
 			JOptionPane.showMessageDialog(this, 
 					"Please run the algorithm for at least one trial to compute a motif!", 
 					"Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		
 		PositionsView posFrame = new PositionsView("PRIORITY: Motif occurrences (TF: " + Parameters.outputTF_name + ")");
 		posFrame.init(Parameters.bestZ, Parameters.comboseq, Parameters.comboseq_names);
 		
@@ -267,12 +320,15 @@ public class MainWindow extends JFrame implements ActionListener
 	
 	
 	/** Will show help topics in the future. */
-	public void viewHelpTopics() {
+	public void viewHelpTopics() 
+	{
 		System.out.println("show help topics");
 	}
 	
+	
 	/** Shows the file README.txt. */
-	public void viewHelpReadme() {
+	public void viewHelpReadme() 
+	{
 		JFrame readme = new JFrame("PRIORITY: README.txt");
 		readme.setSize(630, 500);
 		readme.setIconImage(Priority.icon);
@@ -280,17 +336,22 @@ public class MainWindow extends JFrame implements ActionListener
 		
 		String fileName = "/README.txt";
 		java.net.URL url = this.getClass().getResource(fileName);
-		if (url != null) {
+	
+		if (url != null) 
+		{
 			JEditorPane readmeArea = null;
-			try {
+			try 
+			{
 				readmeArea = new JEditorPane(url);
 			}
-			catch (IOException e) {
+			catch (IOException e) 
+			{
 				JLabel l = new JLabel("Could not load README.txt file.");
 				l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 				readme.getContentPane().add(l);
 				readme.setSize(280, 120);		
 			}
+			
 			readmeArea.setMargin(new Insets(5,5,5,5));
 			readmeArea.setCaretPosition(0);
 			readmeArea.setContentType("text/plain");
@@ -299,20 +360,25 @@ public class MainWindow extends JFrame implements ActionListener
 			readmeArea.setFont(new Font("MonoSpaced", Font.PLAIN, font.getSize()));
 			readme.getContentPane().add(new JScrollPane(readmeArea));
 
-		} else {
+		} 
+		else 
+		{
 			JLabel l = new JLabel("Could not load README.txt file.");
 			l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 			readme.getContentPane().add(l);
 			readme.setSize(280, 120);
 		}
+		
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		readme.validate();
 		readme.setLocation((dim.width - readme.getWidth()) / 2, (dim.height - readme.getHeight()) / 2);
 		readme.setVisible(true);
 	}
 	
+	
 	/** Shows the "about" information. */
-	public void viewHelpAbout() {
+	public void viewHelpAbout() 
+	{
 		JFrame about = new JFrame("PRIORITY: About");
 		about.setResizable(false);
 		about.setIconImage(Priority.icon);
@@ -337,37 +403,48 @@ public class MainWindow extends JFrame implements ActionListener
 		about.setVisible(true);
 	}
 
+	
 	/** Shows the licensing information. */
-	public void viewHelpLicense() {
+	public void viewHelpLicense() 
+	{
 		JFrame licensing = new JFrame("PRIORITY: License Information");
 		licensing.setSize(550, 500);
 		licensing.setIconImage(Priority.icon);
 
 		String fileName = "/license.html";
 		java.net.URL url = this.getClass().getResource(fileName);
-		if (url != null) {
+	
+		if (url != null) 
+		{
 			JEditorPane licenseArea = null;
-			try {
+			
+			try 
+			{
 			   licenseArea = new JEditorPane(url);
 			}
-			catch (IOException e) {
+			catch (IOException e) 
+			{
 				JLabel l = new JLabel("Please visit www.cs.duke.edu for licensing information.");
 				l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 				licensing.getContentPane().add(l);
 				licensing.setSize(380, 200);			
 			}
+			
 			licenseArea.setMargin(new Insets(5,5,5,5));
 			licenseArea.setCaretPosition(0);
 			licenseArea.setContentType("text/html");
 			licenseArea.setEditable(false);
 			licensing.getContentPane().add(new JScrollPane(licenseArea));
 
-		} else {
+		} 
+		else 
+		{
 			JLabel l = new JLabel("Please visit www.cs.duke.edu for licensing information.");
 			l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 			licensing.getContentPane().add(l);
 			licensing.setSize(380, 200);
 		}
+		
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		licensing.validate();
 		licensing.setLocation((dim.width - licensing.getWidth()) / 2, (dim.height - licensing.getHeight()) / 2);
@@ -376,31 +453,40 @@ public class MainWindow extends JFrame implements ActionListener
 
 	
 	/** Shows the tips. */
-	public void viewHelpTips() {
+	public void viewHelpTips() 
+	{
 		JFrame tips = new JFrame("PRIORITY: Tips");
 		tips.setSize(550, 380);
 		tips.setIconImage(Priority.icon);
 
 		String fileName = "/tips.html";
 		java.net.URL url = this.getClass().getResource(fileName);
-		if (url != null) {
+	
+		if (url != null) 
+		{
 			JEditorPane tipsArea = null;
-			try {
+			
+			try 
+			{
 				tipsArea = new JEditorPane(url);
 			}
-			catch (IOException e) {
+			catch (IOException e) 
+			{
 				JLabel l = new JLabel("No tips available.");
 				l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 				tips.getContentPane().add(l);
 				tips.setSize(150, 100);			
 			}
+			
 			tipsArea.setMargin(new Insets(5,5,5,5));
 			tipsArea.setCaretPosition(0);
 			tipsArea.setContentType("text/html");
 			tipsArea.setEditable(false);
 			tips.getContentPane().add(new JScrollPane(tipsArea));
 
-		} else {
+		} 
+		else 
+		{
 			JLabel l = new JLabel("No tips available.");
 			l.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 			tips.getContentPane().add(l);

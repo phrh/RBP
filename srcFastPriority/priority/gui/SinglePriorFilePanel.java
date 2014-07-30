@@ -26,7 +26,8 @@ public class SinglePriorFilePanel extends JPanel implements ActionListener
 	ButtonGroup radioButtonGroup;
 
 	/** Constructor */
-	public SinglePriorFilePanel() {
+	public SinglePriorFilePanel() 
+	{
 		init();
 	}
 
@@ -55,13 +56,16 @@ public class SinglePriorFilePanel extends JPanel implements ActionListener
 		radioButtonGroup.add(singlePrior);
 		
 		
-		if (Parameters.prior_dirs.length == 0) {
+		if (Parameters.prior_dirs.length == 0) 
+		{
 			priorFilePanel = new FilePanel(".", true);
 			uniformPrior.setSelected(true);
 			priorFilePanel.setEnabled(false);
 		}
-		else {
+		else 
+		{
 			priorFilePanel = new FilePanel(Parameters.prior_dirs[0], true);			
+		
 			/**singlePrior.setSelected(true);*/
 			uniformPrior.setSelected(true);
 		}
@@ -74,12 +78,16 @@ public class SinglePriorFilePanel extends JPanel implements ActionListener
 
 	
 	/** Implements the actionPerformed function (from ActionListener) */
-	public void actionPerformed(ActionEvent ev) {
-		if (ev.getSource() == singlePrior) {
+	public void actionPerformed(ActionEvent ev) 
+	{
+		if (ev.getSource() == singlePrior) 
+		{
 			priorFilePanel.setEnabled(true);
  			return;
  		}
-		if (ev.getSource() == uniformPrior) {
+		
+		if (ev.getSource() == uniformPrior) 
+		{
 			singlePrior.setEnabled(true);
 			priorFilePanel.setEnabled(false);
  			return;
