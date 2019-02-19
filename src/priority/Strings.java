@@ -1,14 +1,13 @@
 package priority;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
 import java.util.*;
 
 /**
- * The class reads from a file called "strings"
- * all the strings that will be displayed as
- * part of the GUI.
+ * The class reads from a file called "strings"  all the strings that will be displayed as part of the GUI.
  * @author raluca
+ * 
+ * Some updates of code have been made by Carlos A. Sierra (carlos.andres.sierra.v@gmail.com)
  */
 public class Strings {
 	
@@ -16,8 +15,11 @@ public class Strings {
 	static public String file_name = "./config/strings";
 	
 	
-	/** Reads the strings from the configuration file and returns 
-	 * an error message or the empty string. */
+	/**
+	 * Reads the strings from the configuration file and returns an error message or the empty string.
+	 * @return
+	 */
+	@SuppressWarnings("resource")
 	static public String setStrings() 
 	{
 		String[] result;
@@ -33,21 +35,17 @@ public class Strings {
 			
 			while (line != null) 
 			{
-				if (line.compareTo("") != 0) 
+				if(line.compareTo("") != 0) 
 				{
 				     result = line.split("=");
 				     
 				     if (result.length != 2)
-				     { 
-				    	return "Error: the configuration file " + file_name + " is not well formatted!\n" +
-				    		 "(line " + line_no + ": \"" + line + "\")";
-				     }	
+				     	return "Error: the configuration file " + file_name + " is not well formatted!\n" +
+				    			"(line " + line_no + ": \"" + line + "\")";
 				     
 				     if (result[0].indexOf(' ') >= 0)
-				     {
-				    	 return "Error: the configuration file " + file_name + " is not well formatted!\n" +
-				    		 "(line " + line_no + ": \"" + line + "\")";
-				     }	 
+				     	 return "Error: the configuration file " + file_name + " is not well formatted!\n" +
+				    		 	"(line " + line_no + ": \"" + line + "\")";
 				     
 				     strings.put(result[0].trim(), result[1].trim());
 				}
@@ -62,25 +60,25 @@ public class Strings {
 			{ 
 				br.close(); 
 			} 
-			catch (Exception ee) { }
+			catch (Exception ee) {}
 			
 			return e.getMessage();
-		}	
+		}
+		
 		return "";
 	}
 	
 	
-	/** Returns the string for the object objectName
-	 * or "" if no such object exists. */
+	/**
+	 * Returns the string for the object objectName or "" if no such object exists.
+	 * @param objectName
+	 * @return
+	 */
 	public static String getString(String objectName) 
 	{
 		if (strings.containsKey(objectName))
-		{
 			return (String)strings.get(objectName);
-		}
-		else 
-		{
-			return "";
-		}
+		
+		return "";
 	}
 }

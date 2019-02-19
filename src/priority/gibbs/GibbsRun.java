@@ -3,10 +3,7 @@ package priority.gibbs;
 import priority.gibbs.GibbsException;
 import priority.gibbs.GibbsStatic;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -17,13 +14,12 @@ import priority.Priority;
 /**
  * GibbsRun - this class implements the gibbs sampler
  * @author raluca
- * Modified by: Eng. Paula Reyes, Ph.D. - M.Sc. Eng. Carlos Sierra 
- * Univerisdad Antonio Narino - Colombia   
+ * Modified by: Eng. Paula Reyes, Ph.D. - M.Sc. Eng. Carlos Sierra  
  */
 public class GibbsRun extends Thread
 {
 	/* Path variables for output files: */
-	String fname_output; /* the output directory for a TF (different dir for each TF) */
+	String fname_output; /* the output directory for a TF (different dir for ea+ch TF) */
 	String pans;         /* the complete path for the main output file (different file for each TF) */
 	String pbest;        /* the best results from pans */
 	String plogl;      /* the complete path for the file containing the logls (diff file for each TF) */
@@ -60,30 +56,35 @@ public class GibbsRun extends Thread
 	private Priority mainApp;
 	
 	
-	/** Constructor */
+	/**
+	 * Constructor
+	 * @param priority
+	 */
 	public GibbsRun(Priority priority) 
 	{
 		this.mainApp = priority;
 	}
 
 	
-	/** Stopps the current thread */
+	/**
+	 * Stops the current thread
+	 */
 	public void stopThread() 
 	{
-    	stop_thread = true;
+    	this.stop_thread = true;
     }
     
 	
-	/** Makes local copies of some of the variables in Parameters. */
+	/**
+	 * Makes local copies of some of the variables in Parameters.
+	 */
 	public void set_local_params()
 	{
-		wsize = Parameters.wsize;
-		nc = Parameters.prior_dirs.length;
+		this.wsize = Parameters.wsize;
+		this.nc = Parameters.prior_dirs.length;
 		
 		if (Parameters.otherclass) 
-		{
 			nc = nc + 1;
-		}
 	
 		this.phi_prior = Parameters.phi_prior;
 		
@@ -92,7 +93,11 @@ public class GibbsRun extends Thread
 	}
 	
 	
-	/** Computes COMBOPRIOR. */
+	/**
+	 * Computes COMBOPRIOR.
+	 * @param tf
+	 * @throws GibbsException
+	 */
 	public void set_priors(int tf) throws GibbsException
 	{
 		/* comboprior[c][i][j] = the prior for class/priortype c, sequence i, position j */
@@ -100,20 +105,20 @@ public class GibbsRun extends Thread
 
 		/* set all the priors (except the uniform/other) */
 		int c, i, j, length;
-		for (c=0; c<Parameters.prior_dirs.length; c++) 
+		
+		for(c = 0; c < Parameters.prior_dirs.length; c++) 
 		{
 			try 
 			{ 
-				String filename = Parameters.prior_dirs[c] + "/" + tf_names[tf] + ".prior";
+			 	String filename = Parameters.prior_dirs[c] + "/" + tf_names[tf] + ".prior";
 				File file = new File(filename);
+				
 				if ((!file.exists()) || (!file.isFile()) || (!file.canRead())) 
 				{
 					String mess = "Error: the prior file \"" + filename + "\" does not exist or is not readable!";
 					
 					if (Priority.useInterface) 
-					{
 						javax.swing.JOptionPane.showMessageDialog(null, mess,"Gibbs error", JOptionPane.ERROR_MESSAGE);					
-					}
 	
 					System.out.println(mess+"\n");
 				    throw new GibbsException(mess);
@@ -121,37 +126,30 @@ public class GibbsRun extends Thread
 				
 				double temp[][] = GibbsStatic.get_positional_prior(filename);
 				
-				for (i=0; i<comboseq.length; i++)
-				{
-					if (temp[i].length != comboseq[i].length()) 
+				for(i = 0; i < comboseq.length; i++)
+					if(temp[i].length != comboseq[i].length()) 
 					{
 						String mess = "The size of a fasta sequence (" + comboseq[i].length() + 
 						              ") does not match the size of the prior (" + temp[i].length + ").";
+						
 						throw new GibbsException(mess);
 					}
-				}
 				
 				comboprior[c] = temp;
 				
 				/* if the wsizes (min and max) are specified in the prior file
 				 * check that the current wsize is in that range */
 				if ((Parameters.wsizeMinFromPrior != -1) &&	(Parameters.wsizeMinFromPrior != -1))
-				{	
 					if ((Parameters.wsize < Parameters.wsizeMinFromPrior) || (Parameters.wsize > Parameters.wsizeMaxFromPrior)) 
 					{
-						String mess = "Warning: the motif length (" + Parameters.wsize +
-						              ") is not in the range specified in the prior file\n  " +
-						              filename + " (" + Parameters.wsizeMinFromPrior + ".." +
-						              Parameters.wsizeMaxFromPrior + ").";
+						String mess = "Warning: the motif length (" + Parameters.wsize + ") is not in the range specified in the prior file\n  " +
+						              filename + " (" + Parameters.wsizeMinFromPrior + ".." + Parameters.wsizeMaxFromPrior + ").";
 					
 						if (Priority.useInterface) 
-						{
 							javax.swing.JOptionPane.showMessageDialog(null, mess, "Warning", JOptionPane.WARNING_MESSAGE);
-						}
 						
 						System.out.println(mess);					
 					}
-				}
 			}
 			catch (GibbsException err) 
 			{
@@ -162,105 +160,81 @@ public class GibbsRun extends Thread
 		if (Parameters.otherclass) 
 		{
 			if (nc > 1) /*otherclass is NOT the only class*/
-			{
-				comboprior[nc-1] = (double[][])(comboprior[0]).clone();
-			}
+				comboprior[nc - 1] = (double[][])(comboprior[0]).clone();
 			
-			for (i=0; i<comboseq.length; i++)
+			for(i = 0; i < comboseq.length; i++)
 			{
 				length = comboseq[i].length();
-				comboprior[nc-1][i] = new double[length]; 
+				comboprior[nc - 1][i] = new double[length]; 
 				
-				for (j=0; j<length; j++)
-				{
-					comboprior[nc-1][i][j] = Parameters.flat_prior_other_class;
-				}
+				for(j = 0; j < length; j++)
+					comboprior[nc - 1][i][j] = Parameters.flat_prior_other_class;
 			}
 		}
 		
 		/* scale the prior to be between d and 1-d */
-		for (c=0; c<nc; c++)
-		{	
-			for (i=0; i<comboseq.length; i++)
-			{	
-				for (j=0; j<comboseq[i].length(); j++) 
+		for(c = 0; c < nc; c++)
+			for(i = 0; i < comboseq.length; i++)
+				for(j = 0; j < comboseq[i].length(); j++) 
 				{
 					if (comboprior[c][i][j] == 0)
-					{
 						comboprior[c][i][j] = this.verySmall; /* e^(-30) */
-					}
 					
 					if (comboprior[c][i][j] == 1) /* to avoid values of 1 */
-					{
 						comboprior[c][i][j] = comboprior[c][i][j] - this.verySmall;
-					}
 					
-					comboprior[c][i][j] = comboprior[c][i][j]
-						* (1-2*Parameters.d) + Parameters.d;
+					comboprior[c][i][j] = comboprior[c][i][j] * (1 - 2 * Parameters.d) + Parameters.d;
 				}
-			}	
-		}	
+			
 		
 		/* set the prior to 0 for all wmers that contain, besides 0,1,2,3 the 
 		 * special character '*' (for masked sequences). Do not scale these. */
 		boolean foundNotMasked;
 		
-		for (i=0; i<comboseq.length; i++) 
+		for(i = 0; i < comboseq.length; i++) 
 		{
 			foundNotMasked = false;
 			
-			for (j=0; j<comboseq[i].length()-wsize+1; j++)
-			{	
-				if (comboseq[i].substring(j, j+wsize).contains("*")) 
-				{
-					for (c=0; c<nc; c++)  /* set the priors to 0 */
-					{
+			for(j = 0; j < comboseq[i].length() - wsize + 1; j++)
+				if(comboseq[i].substring(j, j + wsize).contains("*")) 
+					for(c = 0; c < nc; c++)  /* set the priors to 0 */
 						comboprior[c][i][j] = 0;
-					}
-				}
 				else 
-				{
 					foundNotMasked = true;
-				}
-			}
 				
-			if (foundNotMasked == false) 
+			if(foundNotMasked == false) 
 			{
-				String mess = "Error: the DNA sequence \"" + comboseq_names[i].substring(1) 
-				+ "\" contains only masked wmers.";
+				String mess = "Error: the DNA sequence \"" + comboseq_names[i].substring(1)	+ "\" contains only masked wmers.";
 				throw new GibbsException(mess);
 			}
 		}
 		
 		/* this is to ensure we do not sample from the middle part or the end part*/
-		for (c=0; c<nc; c++)
-		{	
-			for (i=0; i<comboseq.length; i++) 
+		for(c = 0; c < nc; c++)
+			for(i = 0; i < comboseq.length; i++) 
 			{
 				if (Parameters.revflag)
-				{	
-					for (j=comboseq[i].length()/2-wsize+1; j<comboseq[i].length()/2; j++)
-					{
-						comboprior[c][i][j]=0;
-					}
-				}	
+					for(j = (comboseq[i].length() / 2 - wsize + 1); j < comboseq[i].length() / 2; j++)
+						comboprior[c][i][j] = 0;
 				
-				for (j=comboseq[i].length()-wsize+1; j<comboseq[i].length(); j++)
-				{
-					comboprior[c][i][j]=0;
-				}
+				for(j= (comboseq[i].length() - wsize + 1); j < comboseq[i].length(); j++)
+					comboprior[c][i][j] = 0;
 			}
-		}	
 	}
 	
 	
-	/** The gibbs sampler */ 
+	/**
+	 * The gibbs sampler 
+	 */
 	public void run()
 	{
+		BufferedWriter bw = new BufferedWriter( new OutputStreamWriter( System.out ) );
+				
 		/* for each TF: */
-		for (int tf=0; tf < tf_names.length; tf++)
+		for(int tf = 0; tf < tf_names.length; tf++)
 		{
-			/**********/ if (this.stop_thread) break;
+			/**********/ 
+			if (this.stop_thread) break;
 			
 			/* read the sequences... */
 			try 
@@ -269,32 +243,28 @@ public class GibbsRun extends Thread
 				comboseq = new String[temp.length/2];
 				comboseq_names = new String[temp.length/2];
 			
-				for (int h=0; h<temp.length; h+=2) 
+				for(int h = 0; h < temp.length; h += 2) 
 				{
-					comboseq_names[h/2] = temp[h];
-					comboseq[h/2] = temp[h+1];
+					comboseq_names[ h / 2 ] = temp[h];
+					comboseq[ h / 2 ] = temp[h + 1];
 				}
 			}
 			catch (GibbsException err) 
 			{
 				if (Priority.useInterface)
-					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
-							"Gibbs error", JOptionPane.ERROR_MESSAGE);
+					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), "Gibbs error", JOptionPane.ERROR_MESSAGE);
 			
 				System.out.println(err.getMessage());
 				continue;
 			}
 			
-			/**********/ if (this.stop_thread) break;
+			/**********/ 
+			if (this.stop_thread) break;
 			
 			/* append the reverse complement */
-			if (Parameters.revflag)
-			{	
-				for (int i=0; i<comboseq.length; i++)
-				{
+			if(Parameters.revflag)
+				for(int i = 0; i < comboseq.length; i++)
 					comboseq[i] = comboseq[i] + GibbsStatic.get_reverse(comboseq[i]);
-				}
-			}	
 			
 			/* set the priors for each position in each of the sequences */
 			try 
@@ -304,11 +274,8 @@ public class GibbsRun extends Thread
 			catch (GibbsException err) 
 			{
 				if (Priority.useInterface)
-				{
-					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
-							"Gibbs error", JOptionPane.ERROR_MESSAGE);
-				}	
-
+					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), "Gibbs error", JOptionPane.ERROR_MESSAGE);
+		
 				System.out.println(err.getMessage());
 				continue;
 			}
@@ -316,15 +283,11 @@ public class GibbsRun extends Thread
 			
 			/* set the pseudocounts for gamma (the prior on the class) */
 			cprior = new double[nc];
-			for (int c=0; c<nc; c++) 
-			{
+			for(int c = 0; c < nc; c++) 
 				cprior[c] = Parameters.pseudocounts_class;
-			}
 			
-			if (Parameters.putative_class >= 0) /* the slight advantage when the class is known */
-			{
+			if(Parameters.putative_class >= 0) /* the slight advantage when the class is known */
 				cprior[Parameters.putative_class] = Parameters.pseudocounts_putative_class; 
-			}
 			
 			
 			/**********/ if (this.stop_thread) break;
@@ -333,40 +296,31 @@ public class GibbsRun extends Thread
 			denom = new double[nc][comboseq.length];
 			int c,i,j;
 			
-			for (i=0; i<comboseq.length; i++)
+			for(i = 0; i < comboseq.length; i++)
 			{
-				for (c=0; c<nc; c++) 
+				for(c = 0; c < nc; c++) 
 				{
 					denom[c][i] = 1;
 				
 					if (comboprior[c][i].length != comboseq[i].length()) 
 					{
-						String mess = "The size of a fasta sequence (" + 
-						              comboseq[i].length() + 
-						              ") does not match the size of the prior (" +
-						              comboprior[c][i].length + ").";
+						String mess = "The size of a fasta sequence (" +  comboseq[i].length() + ") does not match the size of the prior (" + comboprior[c][i].length + ").";
 					
 						if (Priority.useInterface)
-						{
-							javax.swing.JOptionPane.showMessageDialog(null, mess, 
-									"Gibbs error", JOptionPane.ERROR_MESSAGE);
-						}	
+							javax.swing.JOptionPane.showMessageDialog(null, mess, "Gibbs error", JOptionPane.ERROR_MESSAGE);
 						
 						System.out.println(mess+"\n");
 						continue;
 					}
 				}
 				
-				for (j=0; j<comboseq[i].length(); j++)
-				{	
-					for (c=0; c<nc; c++) 
-					{ 
+				for(j = 0; j < comboseq[i].length(); j++)
+					for(c = 0; c < nc; c++) 
 						denom[c][i] = denom[c][i] + comboprior[c][i][j]/(1-comboprior[c][i][j]);
-					}
-				}	
 			}
 			
-			/**********/ if (this.stop_thread) break;
+			/**********/ 
+			if (this.stop_thread) break;
 			
 			/* create the output files */
 			fname_output = Parameters.path_output + "/" + tf_names[tf];	
@@ -381,10 +335,7 @@ public class GibbsRun extends Thread
 			catch (GibbsException err) 
 			{
 				if (Priority.useInterface)
-				{
-					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), 
-							"Gibbs error", JOptionPane.ERROR_MESSAGE);
-				}	
+					javax.swing.JOptionPane.showMessageDialog(null, err.getMessage(), "Gibbs error", JOptionPane.ERROR_MESSAGE);
 								
 				System.out.println(err.getMessage());
 				continue;
@@ -397,22 +348,27 @@ public class GibbsRun extends Thread
 			
 			phi = new double[4][wsize];
 				
-			for (int a=0; a<4; a++)
-			{	
-				for (int b=0; b<wsize; b++)
-				{
+			for(int a = 0; a < 4; a++)
+				for(int b = 0; b < wsize; b++)
 					phi[a][b] = 0;
-				}
-			}	
 			
 			double overallbestlogl = -Double.MAX_VALUE;
 			int overallbestlogl_trial = -1, overallbestlogl_iter = -1;
 			
 			int tr;
-			System.out.print("Running TF " + tf_names[tf] + " ");
+			try 
+			{
+				bw.write("Running TF " + tf_names[tf] + " \n");
+				bw.flush();
+			} 
+			catch (IOException ex) 
+			{
+				ex.printStackTrace();
+			}
 			
-			/*  Modified code by Paula Reyes and Carlos Sierra  */
-			
+			/*  Modified code by Paula Reyes and Carlos Sierra
+			 * to work with parallel trials. Parallel computation
+			 */
 			Vector<Trial> trials_thread = new Vector<Trial>(); //Collection of trials
 			
 			//Create and start all trials
@@ -424,7 +380,7 @@ public class GibbsRun extends Thread
 				
 				try 
 				{
-					Thread.sleep(2000); //Delay of two seconds
+					Thread.sleep(1500); //Delay of 1.5 seconds between trials execution
 				} 
 				catch (InterruptedException e) 
 				{
@@ -449,14 +405,10 @@ public class GibbsRun extends Thread
 						overallbestlogl_iter = trials_thread.get(l).bestlogl_iter; 
 						
 						for (int m = 0; m < trials_thread.get(l).bestZ.length; m++) 
-						{
 							overallbestZ[m] = trials_thread.get(l).bestZ[m];
-						}
 						
 						for (int n = 0; n < trials_thread.get(l).bestC.length; n++) 
-						{
 							overallbestC[n] = trials_thread.get(l).bestC[n];
-						}
 					}
 				} 
 				catch (InterruptedException e) 
@@ -467,13 +419,21 @@ public class GibbsRun extends Thread
 			
 			tr = trials_thread.size();
 			
-			System.out.print("\n\n");
+			try 
+			{
+				bw.write("\n\n");
+				bw.flush();
+			} 
+			catch (IOException ex) 
+			{
+				ex.printStackTrace();
+			}
+			
 			if (tr > 0) 
 			{
-				printToScreen(tf, -1, -1, overallbestZ, overallbestC, overallbestlogl, 
-						overallbestlogl_trial, overallbestlogl_iter);
-				printCurrentTrialInfo(-1, overallbestlogl, null, overallbestZ, overallbestC,
-						overallbestlogl_trial, overallbestlogl_iter);
+				printToScreen(tf, -1, -1, overallbestZ, overallbestC, overallbestlogl, overallbestlogl_trial, overallbestlogl_iter);
+				
+				printCurrentTrialInfo(-1, overallbestlogl, null, overallbestZ, overallbestC, overallbestlogl_trial, overallbestlogl_iter);
 				double[][] overallbest_phi = GibbsStatic.calPhi(overallbestZ, comboseq, -1, wsize, GibbsStatic.noprior);
 				Parameters.setOutput(overallbestZ, overallbestC, overallbest_phi, comboseq, comboseq_names, tf_names[tf]);
 			}
@@ -481,14 +441,19 @@ public class GibbsRun extends Thread
 		}/* end for (int tf=0; tf<fname.length; tf++) */
 		
 		if (Priority.useInterface) 
-		{
 			this.mainApp.win.activateStart();
-		}
 		else 
 		{
-			System.out.println("Done. The results are available in " + Parameters.path_output);
+			try 
+			{
+				bw.write("Done. The results are available in " + Parameters.path_output + "\n");
+				bw.flush();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 		}
-	   
 	}/* end run() */
 	
 	
@@ -497,7 +462,9 @@ public class GibbsRun extends Thread
 	 * ************************ Printing functions *************************************
 	 * ********************************************************************************/
 		
-	/** Prints the information about the current trial in the output files. */
+	/** 
+	 * Prints the information about the current trial in the output files.
+	 */
 	public void printCurrentTrialInfo(int tr, double bestlogl, double logl[], int bestZ[], int bestC[],
 			int overallbestlogl_trial, int overallbestlogl_iter)
 	{
@@ -505,24 +472,20 @@ public class GibbsRun extends Thread
 		BufferedWriter file = null;
 		try 
 		{
-			if (tr <0) /* print best overall results */
-			{
+			if(tr <0) /* print best overall results */
 				file = new BufferedWriter(new FileWriter(pbest, true));
-			}
 			else
 			{
 				file = new BufferedWriter(new FileWriter(pans, true)); /* (tr+1) to start from 1, not 0*/
-				file.write("\n\n" + GibbsStatic.repeatChar('-', 30) + " trial " + (tr+1) + " " +
-					GibbsStatic.repeatChar('-',30));
+				file.write("\n\n" + GibbsStatic.repeatChar('-', 30) + " trial " + (tr+1) + " " + GibbsStatic.repeatChar('-',30));
 			}
 			
 			file.write("\nBest score: " + bestlogl + "\n");
 
-			if (tr <0) 
-			{/* print best overall results */
-				file.write("obtained during trial " + (overallbestlogl_trial+1) + ", iteration " +
-						(overallbestlogl_iter+1) + "\n\n");
-			}
+			if(tr < 0) 
+				/* print best overall results */
+				file.write("obtained during trial " + (overallbestlogl_trial+1) + ", iteration " + (overallbestlogl_iter+1) + "\n\n");
+			
 			
 			phi = GibbsStatic.calPhi(bestZ, comboseq, -1, wsize, GibbsStatic.noprior);			
 			
@@ -530,21 +493,17 @@ public class GibbsRun extends Thread
 			int dec = 4;
 			file.write("Phi:\n    ");
 			
-			for (int j=0; j<wsize; j++) 
-			{
+			for(int j = 0; j < wsize; j++) 
 				file.write(GibbsStatic.formatInt(j+1, dec+2) + " ");
-			}
 			
 			file.write("\n");
 			
-			for (int i=0; i<4; i++) 
+			for(int i = 0; i < 4; i++) 
 			{
 				file.write(" " + GibbsStatic.DNAchars[i] + "  ");
 			
-				for (int j=0; j<wsize; j++)
-				{
+				for(int j = 0; j < wsize; j++)
 					file.write(GibbsStatic.formatDouble01(phi[i][j], dec) + " ");
-				}
 				
 				file.write("\n");
 			}
@@ -555,49 +514,35 @@ public class GibbsRun extends Thread
 			int max;
 			double phi_temp[][] = new double[phi.length][phi[0].length];
 			
-			for (int i=0; i<phi.length; i++)
-			{	
-				for (int j=0; j<phi[0].length; j++)
-				{
+			for(int i = 0; i < phi.length; i++)
+				for(int j = 0; j < phi[0].length; j++)
 					phi_temp[i][j] = phi[i][j];
-				}
-			}	
 			
 			file.write("\n     ");
 			String line = "";
 			
-			for (int k=0; k<4; k++) 
+			for(int k = 0; k < 4; k++) 
 			{
 				line = "";
-				for (int j=0; j<phi_temp[0].length; j++) 
+				for(int j = 0; j < phi_temp[0].length; j++) 
 				{
 					max = 0;
-					for (int i=1; i<4; i++)
-					{	
-						if (phi_temp[i][j] > phi_temp[max][j]) 
-						{
+					for(int i = 1; i < 4; i++)
+						if(phi_temp[i][j] > phi_temp[max][j]) 
 							max = i;
-						}
-					}	
 					
 					letter = "" + GibbsStatic.DNAchars[max];
 					
-					if (phi_temp[max][j] < 0.2)
-					{	
-						if (line.trim().length() == 0)
-						{
+					if(phi_temp[max][j] < 0.2)
+						if(line.trim().length() == 0)
 							line = line + "       ";
-						}
 						else
-						{
 							file.write("       ");
-						}
-					}	
 					else 
 					{
-						if (line.trim().length() == 0) 
+						if(line.trim().length() == 0) 
 						{
-							if (k > 0) 
+							if(k > 0) 
 							{
 								file.write("     ");
 								file.write(line);
@@ -606,32 +551,24 @@ public class GibbsRun extends Thread
 							line = ".";
 						}
 						
-						if (phi_temp[max][j] < 0.5)
-						{
+						if(phi_temp[max][j] < 0.5)
 							file.write("  " + letter.toLowerCase() + "    ");
-						}
 						else
-						{
 							file.write("  " + letter.toUpperCase() + "    ");
-						}
 					}
 					
 					phi_temp[max][j] = -1;
 				}
 				
-				if (line.trim().length() != 0) 
-				{
+				if(line.trim().length() != 0) 
 					file.write("\n");				
-				}
 			}
 
 			/* print bestZ */
 			file.write("\n\nZ: ");
 			
-			for (int i=0; i<bestZ.length; i++)  /*(bestZ[i]+1) to make the indices start from 1, not 0, */
-			{
+			for(int i = 0; i < bestZ.length; i++)  /*(bestZ[i]+1) to make the indices start from 1, not 0, */
 				file.write((bestZ[i]+1) + " "); /* and to be consistent with the paper */ 				                                
-			}
 			
 			file.write("\n");
 			
@@ -641,60 +578,48 @@ public class GibbsRun extends Thread
 				/* print bestC and the class/priortype counts  */
 				file.write("\nC: ");
 				
-				for (i=0; i<bestC.length; i++)
-				{
+				for(i = 0; i < bestC.length; i++)
 					file.write(this.get_class_number_for_printing(bestC[i]) + " ");
-				}
 				
 				file.write("\n");					
 	
 				file.write("\nPrior-type counts: ");
 				
-				for (i=0; i<Parameters.prior_dirs.length; i++)
-				{
+				for(i = 0; i < Parameters.prior_dirs.length; i++)
 					file.write(" " + this.get_class_number_for_printing(i) + ":" + counts[i] + " ");
-				}
 				
-				if (Parameters.otherclass)
-				{
+				if(Parameters.otherclass)
 					file.write(" " + this.get_class_number_for_printing(i) + ":" + counts[i]);
-				}
 				
 				file.write(" \n");
 			}
+			
 			file.write("\n");
 			
-			if (Parameters.noocflag && counts[nc]!=0)
-			{
+			if(Parameters.noocflag && counts[nc] != 0)
 				file.write("Sequences with no occurrence of the motif: " + GibbsStatic.formatInt(counts[nc],3) + "\n\n");			
-			}
 			
-			if (tr < 0 && Parameters.multiple_priors) 
+			if(tr < 0 && Parameters.multiple_priors) 
 			{/* the final best motif */
 				file.write("Predicted prior-type: ");
 				int index = 0; /* stores the index of the max */
 				
-				for (i=1; i<nc; i++)
-				{	
-					if (counts[index] < counts[i])
-					{
+				for(i = 1; i < nc; i++)
+					if(counts[index] < counts[i])
 						index = i;
-					}
-				}
 				
 				file.write(""+get_class_number_for_printing(index));
 			}
 			
 			file.close();
 			
-			if (tr >= 0 && Parameters.createLogl == true) 
+			
+			if(tr >= 0 && Parameters.createLogl == true) 
 			{
 				file = new BufferedWriter(new FileWriter(plogl, true));
 				
-				for (i=0; i<Parameters.iter; i++)
-				{
+				for(i = 0; i < Parameters.iter; i++)
 					file.write(logl[i] + " ");
-				}
 				
 				file.write("\n");					
 				file.close();
@@ -707,10 +632,15 @@ public class GibbsRun extends Thread
 	}
 	
 
-	/** Prints the parameters of the current run in the output files. */ 
+	/**
+	 * Prints the parameters of the current run in the output files. 
+	 * @param tf
+	 * @throws GibbsException
+	 */
 	public void initial_print(int tf) throws GibbsException 
 	{
 		BufferedWriter file = null, filebest = null;
+		
 		try 
 		{
 			if (Parameters.createLogl) 
@@ -728,31 +658,26 @@ public class GibbsRun extends Thread
 		{
 			file = new BufferedWriter(new FileWriter(pans));
 			filebest = new BufferedWriter(new FileWriter(pbest));
-			file.write("\nTranscription factor: " + tf_names[tf] + "\n\n");
-			filebest.write("\nTranscription factor: " + tf_names[tf] + "\n\n");
-			file.write("Trials: " + Parameters.trials + "\n");
-			filebest.write("Trials: " + Parameters.trials + "\n");
-			file.write("Iterations/trial: " + Parameters.iter + "\n");
-			filebest.write("Iterations/trial: " + Parameters.iter + "\n");
-			file.write("Background model order: " + Parameters.bkgrOrder + "\n");
-			filebest.write("Background model order: " + Parameters.bkgrOrder + "\n");
 			
-			file.write("Prior(s):\n");
-			filebest.write("Prior(s):\n");
+			String message = "\nTranscription factor: " + tf_names[tf] + "\n\nTrials: " + Parameters.trials + "\nIterations/trial: " 
+							+ Parameters.iter + "\nBackground model order: " + Parameters.bkgrOrder + "\nPrior(s):\n";
+			
+			file.write( message );
+			filebest.write( message );
 		
-			for (int k=0; k<Parameters.prior_dirs.length; k++) 
+			for(int k = 0; k < Parameters.prior_dirs.length; k++) 
 			{
 				file.write("\t" + this.get_class_number_for_printing(k) + " = " + Parameters.prior_dirs[k] + "\n");
 				filebest.write("\t" + this.get_class_number_for_printing(k) + " = " + Parameters.prior_dirs[k] + "\n");
 			}
 			
-			if (Parameters.otherclass) 
+			if(Parameters.otherclass) 
 			{
 				file.write("\t" + this.get_class_number_for_printing(Parameters.prior_dirs.length) + " = other/uniform prior" + "\n");
 				filebest.write("\t" + this.get_class_number_for_printing(Parameters.prior_dirs.length) + " = other/uniform prior" + "\n");
 			}
 			
-			if (Parameters.putative_class != -1) 
+			if(Parameters.putative_class != -1) 
 			{
 				file.write("Putative prior-type: " + this.get_class_number_for_printing(Parameters.putative_class) + "\n");
 				filebest.write("Putative prior-type: " + this.get_class_number_for_printing(Parameters.putative_class) + "\n");
@@ -763,10 +688,10 @@ public class GibbsRun extends Thread
 				filebest.write("\n"); /* No putative prior-type */
 			}
 			
-			file.write("Number of sequences: " + comboseq.length + "\n");
-			filebest.write("Number of sequences: " + comboseq.length + "\n");
-			file.write("Motif length: " + wsize + "\n");
-			filebest.write("Motif length: " + wsize + "\n\n\n");
+			message = "Number of sequences: " + comboseq.length + "\nMotif length: " + wsize + "\n\n";
+			
+			file.write( message );
+			filebest.write( message );
 			file.close();			
 			filebest.close();
 		} 
@@ -777,38 +702,40 @@ public class GibbsRun extends Thread
 	}
 
 	
-	/** Prints to screen some information about the current run (trial).
-	 *  When tr = -1, it prints the information about the best run.*/
+	/**
+	 * Prints to screen some information about the current run (trial).
+	 *  When tr = -1, it prints the information about the best run.
+	 * @param tf
+	 * @param tr
+	 * @param cnt
+	 * @param bestZ
+	 * @param bestC
+	 * @param bestlogl
+	 * @param overallbestlogl_trial
+	 * @param overallbestlogl_iter
+	 */
 	public void printToScreen(int tf, int tr, int cnt, int bestZ[], int bestC[], double bestlogl,
 			int overallbestlogl_trial, int overallbestlogl_iter)
 	{
-		if (Priority.useInterface == false)
-		{
+		if(Priority.useInterface == false)
 			return;
-		}
 		
 		String str = GibbsStatic.repeatChar('-', 24);
 		double[] noprior = {0,0,0,0};
 		
-		if (tr < 0)
-		{/* the final best motif */
-			this.mainApp.printOutput(GibbsStatic.repeatChar('-', 21) + 
-					" TF: " + tf_names[tf] +", best result " + 
-					GibbsStatic.repeatChar('-', 21) + "\n", null);	
-		
+		if(tr < 0)
+		{
+			/* the final best motif */
+			this.mainApp.printOutput(GibbsStatic.repeatChar('-', 21) + " TF: " + tf_names[tf] +", best result " + GibbsStatic.repeatChar('-', 21) + "\n", null);	
 			this.mainApp.printOutput("Best score: " + bestlogl + "\n", null);
-			
-			this.mainApp.printOutput("obtained during trial " + (overallbestlogl_trial+1) +
-					", iteration "  + (overallbestlogl_iter+1) + "\n", null);
+			this.mainApp.printOutput("obtained during trial " + (overallbestlogl_trial+1) +	", iteration "  + (overallbestlogl_iter+1) + "\n", null);
 			
 			this.mainApp.printOutput("PSSM: \n", null);
 			phi_temp = GibbsStatic.calPhi(bestZ, comboseq, -1, wsize, noprior);		
 			print_phi(phi_temp, null);
 			
 			if (Parameters.multiple_priors)
-			{
 				this.mainApp.printOutput("Prior-type counts: \n", null); 
-			}
 		}
 		else 
 		{
@@ -820,154 +747,128 @@ public class GibbsRun extends Thread
 			print_phi(phi_temp);
 			
 			if (Parameters.multiple_priors)
-			{
 				this.mainApp.printOutput("Prior-type counts: \n");
-			}
 		}
 		
 		int i, counts[] = GibbsStatic.class_counts(bestC, bestZ, nc);
 		
-		if (tr < 0) 
-		{/* the final best motif */
-			if (Parameters.multiple_priors)
+		if(tr < 0) 
+		{
+			/* the final best motif */
+			if(Parameters.multiple_priors)
 			{
-				for (i=0; i<Parameters.prior_dirs.length; i++)
-				{
+				for(i = 0; i < Parameters.prior_dirs.length; i++)
 					this.mainApp.printOutput(" " + GibbsStatic.formatInt(counts[i],3) + " ", null);
-				}
 			
-				if (Parameters.otherclass)
-				{
+				if(Parameters.otherclass)
 					this.mainApp.printOutput(" " + GibbsStatic.formatInt(counts[i],3), null);
-				}
-		    }	
+			}	
 			
 			this.mainApp.printOutput(" \n",  null);
 			
-			if (Parameters.noocflag && counts[nc]!=0)
-			{
+			if(Parameters.noocflag && counts[nc] != 0)
 				this.mainApp.printOutput("Sequences with no occurrence of the motif: " + GibbsStatic.formatInt(counts[nc],3) + "\n", null);
-			}
 		}
 		else 
 		{
-			if (Parameters.multiple_priors)
+			if(Parameters.multiple_priors)
 			{
-				for (i=0; i<Parameters.prior_dirs.length; i++)
-				{
+				for(i = 0; i < Parameters.prior_dirs.length; i++)
 					this.mainApp.printOutput(" " + GibbsStatic.formatInt(counts[i],3) + " ");
-				}
 				
 				if (Parameters.otherclass)
-				{
 					this.mainApp.printOutput(" " + GibbsStatic.formatInt(counts[i],3));
-				}
 			}
 			
 			this.mainApp.printOutput(" \n");
 			
-			if (Parameters.noocflag && counts[nc]!=0)
-			{
+			if (Parameters.noocflag && counts[nc] != 0)
 				this.mainApp.printOutput("Sequences with no occurrence of the motif: " + GibbsStatic.formatInt(counts[nc],3) + "\n");			
-			}
 		}
 		
-		if (tr < 0 && Parameters.multiple_priors) 
+		if(tr < 0 && Parameters.multiple_priors) 
 		{/* the final best motif */
 			this.mainApp.printOutput("Predicted prior-type: ", null);
 			int index = 0; /* stores the index of the max */
 			
-			for (i=1; i<nc; i++)
-			{	
-				if (counts[index] < counts[i])
-				{
+			for(i = 1; i < nc; i++)
+				if(counts[index] < counts[i])
 					index = i;
-				}
-			}	
 			
-			this.mainApp.printOutput(""+index, null);
+			this.mainApp.printOutput("" + index, null);
 		}
 		
 		this.mainApp.printOutput("\n\n\n", null);
 	}
 	
 	
-	/** Prints the PSSM to the screen. */
+	/**
+	 * Prints the PSSM to the screen.
+	 * @param phi
+	 */
 	public void print_phi(double phi[][])
 	{
-		if (Priority.useInterface == false)
-		{
+		if(Priority.useInterface == false)
 			return;
-		}
 		
 		int dec = 4;
 		this.mainApp.printOutput(GibbsStatic.repeatChar(' ', 4));
 		
-		for (int j=0; j<phi[0].length; j++)
-		{
+		for(int j = 0; j < phi[0].length; j++)
 			this.mainApp.printOutput(GibbsStatic.formatInt(j+1, dec+2) + " ");
-		}
-	
+		
 		this.mainApp.printOutput("\n");
 		
-		for (int i=0; i<phi.length; i++)
+		for(int i = 0; i < phi.length; i++)
 		{
 			this.mainApp.printOutput(" " + GibbsStatic.DNAchars[i] + "  ");
 			
-			for (int j=0; j<phi[i].length; j++)
-			{
-				this.mainApp.printOutput(
-						GibbsStatic.formatDouble01(phi[i][j], dec) + " ");
-			}	
+			for(int j = 0; j < phi[i].length; j++)
+				this.mainApp.printOutput( GibbsStatic.formatDouble01(phi[i][j], dec) + " " );
 			
 			this.mainApp.printOutput("\n");
 		}	
 	}
 	
 	
-	/** Prints the PSSM to the screen. */
+	/**
+	 * Prints the PSSM to the screen.
+	 * @param phi
+	 * @param color
+	 */
 	public void print_phi(double phi[][], java.awt.Color color)
 	{
 		if (Priority.useInterface == false)
-		{
 			return;
-		}
-
+		
 		int dec = 4;
 		this.mainApp.printOutput(GibbsStatic.repeatChar(' ', 4), color);
 		
-		for (int j=0; j<phi[0].length; j++)
-		{
+		for(int j = 0; j < phi[0].length; j++)
 			this.mainApp.printOutput(GibbsStatic.formatInt(j+1, dec+2) + " ", color);
-		}
 		
 		this.mainApp.printOutput("\n", color);
 		
-		for (int i=0; i<phi.length; i++)
+		for(int i = 0; i < phi.length; i++)
 		{
 			this.mainApp.printOutput(" " + GibbsStatic.DNAchars[i] + "  ", color);
-			for (int j=0; j<phi[i].length; j++)
-			{
+	
+			for(int j = 0; j < phi[i].length; j++)
 				this.mainApp.printOutput(GibbsStatic.formatDouble01(phi[i][j], dec) + " ", color);
-			}	
 			
 			this.mainApp.printOutput("\n", color);
 		}	
 	}
 	
 	
-	/** Maps the class indices (as they are used in the implementation) to
-	 * the class indices used in the paper, i.e. "other" class is always 0
-	 * and no other class is 0. */
+	/**
+	 * Maps the class indices (as they are used in the implementation) to the class indices used in the paper, i.e. "other" class is always 0
+	 * and no other class is 0.
+	 * @param number
+	 * @return
+	 */
 	private int get_class_number_for_printing(int number) 
 	{
-		if (Parameters.otherclass) 
-		{
-			return (number + 1) % nc;
-		}
-		else
-		{
-			return number + 1;
-		}
+		return (Parameters.otherclass) ? (number + 1) % nc : number + 1;
 	}
 } /* end GibbsRun */

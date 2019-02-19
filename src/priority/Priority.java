@@ -1,21 +1,18 @@
 package priority;
+
 import priority.gui.MainWindow;
 import priority.gibbs.GibbsRun;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.Color;
-import javax.swing.JOptionPane;
-import javax.swing.JFrame;
-import javax.swing.JWindow;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import java.awt.*;
+import javax.swing.*;
+import java.io.*;
+
 
 /**
  * Priority - the main class
  * It runs both the GUI and the algorithm. 
  * @author raluca
+ * 
+ * Some updates of code have been made by Carlos A. Sierra (carlos.andres.sierra.v@gmail.com)
  */
 public class Priority 
 {
@@ -25,83 +22,60 @@ public class Priority
     static public String userConfigFile = null;
 	static public Image icon = null;
 	
-	/** Number of milliseconds the splash screen will stay visible. */
+	/* Number of milliseconds the splash screen will stay visible. */
 	private static int SPLASH_VIEW_TIME = 800;
 	
-	/** Number of milliseconds that will elapse before beginning the
-	 * actual loading of the graphical interface  */
+	/* Number of milliseconds that will elapse before beginning the actual loading of the graphical interface  */
 	private static final int WAIT_BEFORE_START = 600;
 		
-	/** The main object */
-	static Priority priority;
+	/* The main object */
+	public static Priority priority;
 	
-	/** The main function. */
+	
+	/**
+	 * The main function.
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main (String args[]) throws Exception 
 	{	
 		/* Create the main object. */
 		priority = new Priority();
 		
 		if (args.length == 0) 
-		{ /* continue (run the GUI version) */		
+		{ 
+			/* continue (run the GUI version) */		
 		} 
 		else 
-		{	
 			if (args.length == 1) 
-			{
 				if (args[0].equals("-nogui"))
-				{
 					useInterface = false;
-				}
 				else
-				{
 					printHelp();
-				}
-			}
 			else 
-			{
 				if (args.length == 2) 
-				{
 					/* the parameters should be "-f" and the name of a config file */
 					if (args[0].equals("-f")) 
-					{
 						userConfigFile = args[1];
-					}
 					else
-					{
 						printHelp();
-					}
-				}
 				else 
-				{	
 					if (args.length == 3) 
-					{
 						/* the parameters should be "-nogui", "-f" and the name of a config file */
 						if (!args[0].equals("-nogui"))
-						{
 							printHelp();
-						}
 						else 
 						{
 							useInterface = false;	
 							if (args[1].equals("-f")) 
-							{
 								userConfigFile = args[2];
-							}
 							else
-							{
 								printHelp();
-							}
 						}
-					} 
 					else
-					{
 						printHelp();
-					}
-				}
-			}
-		}	
 		
-		if (useInterface) 
+		if(useInterface) 
 		{
 			/* Set the icon. */
 			String imgName = "/priorityicon.jpg";
@@ -125,14 +99,18 @@ public class Priority
 					ImageIcon picture = new ImageIcon(url);
 	
 					JLabel label = new JLabel(picture);
+			
 					int w = picture.getIconWidth();
 					int h = picture.getIconHeight();
+					
 					splash.setSize(w, h);
 					splash.getContentPane().add(label, BorderLayout.CENTER);
+					
 					Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 					splash.setLocation(
 							(dim.width - w) / 2,
 							(dim.height - h) / 2);
+					
 					splash.setVisible(true);
 					
 					try 
@@ -150,12 +128,13 @@ public class Priority
 		{
 			public void run() 
 			{
-				if (useInterface) 
+				if(useInterface) 
 				{
 					try 
 					{
 						Thread.sleep(WAIT_BEFORE_START);
-					} catch (InterruptedException e) {}
+					} 
+					catch (InterruptedException e) {}
 				}
 				
 				/* Read the strings for the GUI. */
@@ -163,36 +142,29 @@ public class Priority
 				if (err.compareTo("") != 0) 
 				{
 					System.out.println(err);
-					if (useInterface) 
-					{
+					if(useInterface) 
 						JOptionPane.showMessageDialog(null, err, "Configuration error", JOptionPane.ERROR_MESSAGE);
-					}
+					
 					System.exit(0);
 				}
 
 				/* Read and set the default parameters. */
 				if (userConfigFile == null)
-				{
 					err = Parameters.setDefaultParameters();
-				}
 				else
-				{
 					err = Parameters.setDefaultParameters(Priority.userConfigFile);
-				}
 				
 				if (err.compareTo("") != 0) 
 				{
 					System.out.println(err);
 					
-					if (useInterface) 
-					{
+					if(useInterface) 
 						JOptionPane.showMessageDialog(null, err, "Config error", JOptionPane.ERROR_MESSAGE);
-					}
 					
 					System.exit(0);
 				}
 				
-		        if (useInterface) 
+		        if(useInterface) 
 		        {
 					/*Makes the JFrame.setMinimumSize work */
 					try 
@@ -206,14 +178,10 @@ public class Priority
 						catch (SecurityException e) {}
 						
 						if (os.toLowerCase().indexOf("linux") < 0)
-						{
 							javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-						}
 						else
-						{
 							JFrame.setDefaultLookAndFeelDecorated(true);
-						}
-			        } 
+					}
 					catch(Exception e) {}
 
 					/* Create and show the main window. */
@@ -231,7 +199,9 @@ public class Priority
 	}
 	
 	
-	/** Starts a thread that runs the gibbs sampler. */
+	/**
+	 * Starts a thread that runs the gibbs sampler.
+	 */
 	public void startGibbs() 
 	{
 		gibbs = new GibbsRun(this);
@@ -240,48 +210,67 @@ public class Priority
 	}
 
 	
-	/** Stops the thread created in startGibbs. */
+	/**
+	 * Stops the thread created in startGibbs.
+	 */
 	public void stopGibbs() 
 	{
 		if ((gibbs != null) && gibbs.isAlive())
-		{
 			gibbs.stopThread();
-		}
 		
 		gibbs = null;
 		System.gc();
 	}
 
 	
-	/** This function is called by the gibbs sampler when it is done. */  
+	/**
+	 * This function is called by the gibbs sampler when it is done.  
+	 */
 	public void finished() 
 	{
 		win.activateStart();
 	}
 	
 	
-	/** Prints the output. */
+	/**
+	 * Prints the output
+	 * @param str
+	 */
 	public void printOutput(String str) 
 	{
 		this.win.appendTextToTextPanel(str);
 	}
 	
 	
-	/** Prints the output using a specific color. */
+	/**
+	 * Prints the output using a specific color.
+	 * @param str
+	 * @param color
+	 */
 	public void printOutput(String str, Color color) 
 	{
 		this.win.appendTextToTextPanel(str, color);
 	}
 	
 
+	/**
+	 * Print a help to the user
+	 */
 	public static void printHelp() 
 	{
-		System.out.println("Usage:  ");
-		System.out.println("  java -jar priority.jar                         Run PRIORITY (GUI version)");
-		System.out.println("  java -jar priority.jar -nogui                  Run PRIORITY (command line version)");
-		System.out.println("  java -jar priority.jar -f config_file          Run PRIORITY (GUI) with the specified config file");
-		System.out.println("  java -jar priority.jar -nogui -f config_file   Run PRIORITY (command line) with the specified config file");
-		System.out.println("  java -jar priority.jar -h                      Print this help message.");
+		BufferedWriter bw = new BufferedWriter( new OutputStreamWriter( System.out ) );
+		
+		try
+		{
+			bw.write("Usage:  \n");
+			bw.write("  java -jar priority.jar                         Run PRIORITY (GUI version)\n");
+			bw.write("  java -jar priority.jar -nogui                  Run PRIORITY (command line version)\\n");
+			bw.write("  java -jar priority.jar -f config_file          Run PRIORITY (GUI) with the specified config file\\n");
+			bw.write("  java -jar priority.jar -nogui -f config_file   Run PRIORITY (command line) with the specified config file\\n");
+			bw.write("  java -jar priority.jar -h                      Print this help message.\\n");
+		}
+		catch(Exception ex) {}
+		
 		System.exit(0);
 	}
 }
