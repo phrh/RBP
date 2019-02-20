@@ -6,4 +6,5 @@ FP use threads concepts to parallelize trials and reduce computational resources
 
 In addition, another coding aspects are improved, trying to reduce time complexity.
 
- 
+IEEE Publication:
+https://ieeexplore.ieee.org/document/6860428 
